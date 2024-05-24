@@ -1,0 +1,9 @@
+services:
+  plant-disease-db:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: plant_disease
+      POSTGRES_PASSWORD: plant_disease
+      POSTGRES_DB: plant_disease
+    ports:
+      - 5433:5432
