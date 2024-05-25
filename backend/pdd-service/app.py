@@ -1,18 +1,18 @@
-from datetime import datetime
-
-import numpy as np
-import tensorflow as tf
 from flask import Flask, request, jsonify
 from flask_migrate import Migrate
-from flask_sqlalchemy import SQLAlchemy
+import numpy as np
+import tensorflow as tf
 from keras.api.preprocessing.image import img_to_array, load_img
 
+from database import db
+from models import Measurement
+
 app = Flask(__name__)
-model = tf.keras.models.load_model('model\weights_22epochs_final.weights.h5')
+model = tf.keras.models.load_model('model/weights_22epochs_final.weights.h5')
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://plant_disease:plant_disease@localhost:5433/plant_disease'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-db = SQLAlchemy(app)
 
+db.init_app(app)
 migrate = Migrate(app, db)
 
 def preprocess_image(image_path, target_size=(225, 225)):
@@ -21,7 +21,6 @@ def preprocess_image(image_path, target_size=(225, 225)):
     x = x.astype('float32') / 255.
     x = np.expand_dims(x, axis=0)
     return x
-
 
 @app.route('/predict', methods=['POST'])
 def predict():
@@ -42,56 +41,21 @@ def predict():
 
     return jsonify({'prediction': predicted_label})
 
-
 @app.route('/measurement', methods=['POST'])
 def measurement_save():
-    lon = request.form.get('lon')
-    lat = request.form.get('lat')
-    time_of_measurement = request.form.get('time_of_measurement')
-    predicted_result = request.form.get('predicted_result')
+    data = request.get_json()
+    lon = data.get('lon')
+    lat = data.get('lat')
+    time_of_measurement = data.get('time_of_measurement')
+    predicted_result = data.get('predicted_result')
     measurement = Measurement(None, lon, lat, time_of_measurement, predicted_result)
     db.session.add(measurement)
     db.session.commit()
-    print(measurement)
     return jsonify(measurement.to_dict())
 
 @app.before_request
 def app_context():
     db.create_all()
 
-
-class Measurement(db.Model):
-    __tablename__ = 'measurements'
-
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    lon = db.Column(db.String(120))
-    lat = db.Column(db.String(120))
-    time_of_measurement = db.Column(db.DateTime, default=datetime.utcnow())
-    predicted_result = db.Column(db.String(120))
-
-    def __init__(self, id=None, lon=None, lat=None, time_of_measurement=None, predicted_result=None):
-        self.id = id
-        self.lon = lon
-        self.lat = lat
-        if time_of_measurement is not None:
-            self.time_of_measurement = time_of_measurement
-        else:
-            self.time_of_measurement = datetime.utcnow()
-        self.predicted_result = predicted_result
-
-    def __repr__(self):
-        return f'<Measurement {self.id!r}, {self.lon!r}, {self.lat!r}, {self.time_of_measurement!r}, {self.predicted_result!r}>'
-
-    def to_dict(self):
-        return {
-            'id': self.id,
-            'lon': self.lon,
-            'lat': self.lat,
-            'time_of_measurement': self.time_of_measurement.isoformat() if self.time_of_measurement else None,
-            'predicted_result': self.predicted_result
-        }
-
-
 if __name__ == '__main__':
     app.run(debug=True)
-    db.init_app(app)
