@@ -3,17 +3,22 @@ from flask_migrate import Migrate
 import numpy as np
 import tensorflow as tf
 from keras.api.preprocessing.image import img_to_array, load_img
+from flask_cors import CORS
+from dotenv import load_dotenv
+import os
 
 from database import db
 from models import Measurement
 
 app = Flask(__name__)
+load_dotenv()
 model = tf.keras.models.load_model('model/weights_22epochs_final.weights.h5')
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://plant_disease:plant_disease@localhost:5433/plant_disease'
+app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db.init_app(app)
 migrate = Migrate(app, db)
+cors = CORS(app)
 
 def preprocess_image(image_path, target_size=(225, 225)):
     img = load_img(image_path, target_size=target_size)
@@ -58,4 +63,4 @@ def app_context():
     db.create_all()
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=os.getenv('DEBUG'))

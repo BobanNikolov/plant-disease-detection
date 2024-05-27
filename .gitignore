@@ -23,6 +23,7 @@
 /frontend/yarn-error.log*
 
 /backend/venv/
+/backend/pdd-service/.env
 /backend/.idea/
 /backend/__pycache__/
 /backend/data/model/
