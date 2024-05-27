@@ -1,0 +1,7 @@
+{
+  "name": "plant-disease-detection-ui",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular"
+}
