@@ -1,15 +1,15 @@
 <ion-header>
   <ion-toolbar>
-    <ion-title>Plant Disease Detection</ion-title>
+    <ion-title>Препознавање болест кај растенија</ion-title>
   </ion-toolbar>
 </ion-header>
 
 <ion-content class="ion-padding">
-  <ion-button expand="full" (click)="takePicture()">Take a Picture</ion-button>
+  <ion-button expand="full" (click)="takePicture()">Сликај</ion-button>
   <img [src]="imageUrl" *ngIf="imageUrl" />
   <ion-card *ngIf="prediction">
     <ion-card-header>
-      <ion-card-title>Prediction Result</ion-card-title>
+      <ion-card-title>Резултат:</ion-card-title>
     </ion-card-header>
     <ion-card-content>
       {{ prediction }}
