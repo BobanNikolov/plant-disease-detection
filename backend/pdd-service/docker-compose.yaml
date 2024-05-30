@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+  web:
+    image: pdd:v0.0.1
+    container_name: pdd_service
+    ports:
+      - "5000:5000"
+    depends_on:
+      - db
+
+  db:
+    image: postgres:14
+    container_name: postgres_db
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: plant_disease
+      POSTGRES_PASSWORD: plant_disease
+      POSTGRES_DB: plant_disease
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:

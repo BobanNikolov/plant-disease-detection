@@ -1,14 +1,34 @@
-FROM python:3.8-slim-buster
+# Use the official Python image as the base image
+FROM python:3.11-slim
 
-WORKDIR /python-docker
+# Set environment variables
+ENV PYTHONUNBUFFERED=1
+ENV PYTHONDONTWRITEBYTECODE=1
 
+# Set the working directory in the container
+WORKDIR /app
+
+# Copy the requirements.txt file into the container
 COPY requirements.txt .
-RUN \
- apk add --no-cache postgresql-libs && \
- apk add --no-cache --virtual .build-deps gcc musl-dev postgresql-dev && \
- python3 -m pip install -r requirements.txt --no-cache-dir && \
- apk --purge del .build-deps
 
+# Install system dependencies and PostgreSQL client libraries
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+        build-essential \
+        libpq-dev \
+        gcc \
+        && \
+    python3 -m pip install --upgrade pip && \
+    pip install --no-cache-dir -r requirements.txt && \
+    apt-get purge -y --auto-remove build-essential gcc && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+# Copy the rest of the application code into the container
 COPY . .
 
-CMD [ "python3", "-m" , "flask", "run", "--host=0.0.0.0"]
+# Expose the port that the Flask app runs on
+EXPOSE 5000
+
+# Command to run the Flask app
+CMD ["flask", "run", "--host=0.0.0.0"]
