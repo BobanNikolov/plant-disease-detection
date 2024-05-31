@@ -1,4 +1,4 @@
 export const environment = {
   production: true,
-  backendUrl: 'ec2-52-57-36-113.eu-central-1.compute.amazonaws.com:5000'
+  backendUrl: 'http://ec2-18-197-167-218.eu-central-1.compute.amazonaws.com:5000'
 };
