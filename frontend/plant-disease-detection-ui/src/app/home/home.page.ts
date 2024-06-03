@@ -12,6 +12,7 @@ import { environment } from 'src/environments/environment';
 export class HomePage {
 
   imageUrl: string | undefined;
+  prediction_translated: string | undefined;
   prediction: string | undefined;
 
   constructor(private http: HttpClient) {}
@@ -32,14 +33,15 @@ export class HomePage {
     const formData = new FormData();
     formData.append('image', resizedImageBlob, 'image.jpg');
 
-    this.http.post<{ prediction: string }>(environment.backendUrl + '/predict', formData).subscribe(async result => {
+    this.http.post<{ prediction: string, prediction_translated: string }>(environment.backendUrl + '/predict', formData).subscribe(async result => {
+      this.prediction_translated = result.prediction_translated;
       this.prediction = result.prediction;
       const coordinates = await Geolocation.getCurrentPosition();
 
       const measurementData = {
         lon: coordinates.coords.longitude.toString(),
         lat: coordinates.coords.latitude.toString(),
-        time_of_measurement: new Date().toISOString(),  
+        time_of_measurement: new Date().toISOString(),
         predicted_result: this.prediction
       };
       console.log(measurementData)
@@ -71,7 +73,7 @@ export class HomePage {
     });
   }
 
-  
+
   async fetchImageAsBlob(imageUrl: string): Promise<Blob> {
     const response = await fetch(imageUrl);
     return await response.blob();

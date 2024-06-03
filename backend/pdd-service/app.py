@@ -20,12 +20,27 @@ db.init_app(app)
 migrate = Migrate(app, db)
 cors = CORS(app)
 
+tomato_diseases_dict = {
+    'Tomato_Bacterial_spot': 'Бактериска дамкавост',
+    'Tomato_Early_blight': 'Црна дамкавост',
+    'Tomato_Healthy': 'Здрав',
+    'Tomato_Late_blight': 'Пламеница',
+    'Tomato_Leaf_Mold': 'Плеснатост на листови',
+    'Tomato_Mosaic_virus': 'Мозаичен вирус',
+    'Tomato_Septoria_leaf_spot': 'Сива лисна дамкавост',
+    'Tomato_Spider_mites': 'Пајакови грини',
+    'Tomato_Target_Spot': 'Црна пегавост',
+    'Tomato_Yellow_Leaf_Curl_Virus': 'Жолто лисно завивање'
+}
+
+
 def preprocess_image(image_path, target_size=(225, 225)):
     img = load_img(image_path, target_size=target_size)
     x = img_to_array(img)
     x = x.astype('float32') / 255.
     x = np.expand_dims(x, axis=0)
     return x
+
 
 @app.route('/predict', methods=['POST'])
 def predict():
@@ -36,7 +51,6 @@ def predict():
     x = preprocess_image(image_path)
 
     predictions = model.predict(x)
-    print(predictions[0])
 
     labels = {'Tomato_Bacterial_spot': 0, 'Tomato_Early_blight': 1, 'Tomato_Healthy': 2, 'Tomato_Late_blight': 3,
               'Tomato_Leaf_Mold': 4, 'Tomato_Mosaic_virus': 5, 'Tomato_Septoria_leaf_spot': 6, 'Tomato_Spider_mites': 7,
@@ -44,7 +58,8 @@ def predict():
     labels = {v: k for k, v in labels.items()}
     predicted_label = labels[np.argmax(predictions)]
 
-    return jsonify({'prediction': predicted_label})
+    return jsonify({'prediction': predicted_label, 'prediction_translated': tomato_diseases_dict[predicted_label]})
+
 
 @app.route('/measurement', methods=['POST'])
 def measurement_save():
@@ -58,9 +73,11 @@ def measurement_save():
     db.session.commit()
     return jsonify(measurement.to_dict())
 
+
 @app.before_request
 def app_context():
     db.create_all()
+
 
 if __name__ == '__main__':
     app.run(debug=os.getenv('DEBUG'))

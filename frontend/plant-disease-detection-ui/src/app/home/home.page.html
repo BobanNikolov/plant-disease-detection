@@ -7,12 +7,12 @@
 <ion-content class="ion-padding">
   <ion-button expand="full" (click)="takePicture()">Сликај</ion-button>
   <img [src]="imageUrl" *ngIf="imageUrl" />
-  <ion-card *ngIf="prediction">
+  <ion-card *ngIf="prediction_translated">
     <ion-card-header>
       <ion-card-title>Резултат:</ion-card-title>
     </ion-card-header>
     <ion-card-content>
-      {{ prediction }}
+      {{ prediction_translated }}
     </ion-card-content>
   </ion-card>
 </ion-content>
